@@ -74,3 +74,5 @@ ALERT! Timestamp: 2025-07-28 18:26:33, Frame: 88, Motion Energy: 957.84, Hand Sp
 ALERT! Timestamp: 2025-07-28 18:26:34, Frame: 96, Motion Energy: 646.52, Hand Speed: 76.52
 ALERT! Timestamp: 2025-07-28 18:27:56, Frame: 8, Motion Energy: 785.75, Hand Speed: 87.96
 ALERT! Timestamp: 2025-07-28 18:28:37, Frame: 150, Motion Energy: 946.98, Hand Speed: 63.18
+ALERT! Timestamp: 2025-07-28 18:35:31, Frame: 8, Motion Energy: 785.75, Hand Speed: 87.96
+ALERT! Timestamp: 2025-07-28 18:36:47, Frame: 702, Motion Energy: 2295.92, Hand Speed: 66.18

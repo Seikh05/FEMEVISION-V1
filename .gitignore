@@ -6,7 +6,7 @@ __pycache__/
 app/processing_test.py
 app/test_UI.py
 app_test.py
-
+violence_log.txt
 
 # C extensions
 *.so
