@@ -68,3 +68,9 @@ ALERT! Timestamp: 2025-07-28 17:05:43, Frame: 48, Motion Energy: 3185.25, Hand S
 ALERT! Timestamp: 2025-07-28 17:05:54, Frame: 8, Motion Energy: 785.75, Hand Speed: 87.96
 ALERT! Timestamp: 2025-07-28 17:06:21, Frame: 150, Motion Energy: 946.98, Hand Speed: 63.18
 ALERT! Timestamp: 2025-07-28 17:41:42, Frame: 8, Motion Energy: 785.75, Hand Speed: 87.96
+ALERT! Timestamp: 2025-07-28 18:26:24, Frame: 4, Motion Energy: 1176.29, Hand Speed: 49.76
+ALERT! Timestamp: 2025-07-28 18:26:32, Frame: 86, Motion Energy: 737.91, Hand Speed: 69.56
+ALERT! Timestamp: 2025-07-28 18:26:33, Frame: 88, Motion Energy: 957.84, Hand Speed: 73.51
+ALERT! Timestamp: 2025-07-28 18:26:34, Frame: 96, Motion Energy: 646.52, Hand Speed: 76.52
+ALERT! Timestamp: 2025-07-28 18:27:56, Frame: 8, Motion Energy: 785.75, Hand Speed: 87.96
+ALERT! Timestamp: 2025-07-28 18:28:37, Frame: 150, Motion Energy: 946.98, Hand Speed: 63.18
