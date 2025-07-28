@@ -3,12 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+app/processing_test.py
+app/test_UI.py
+app_test.py
+
+
 # C extensions
 *.so
 
-app/processing_test.py
-app/ui_test.py
-app_test.py
+
 # Distribution / packaging
 .Python
 build/
