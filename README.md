@@ -2,7 +2,7 @@
 
 A computer vision project by **Team FemeVision** that analyzes video to detect potential violence using motion and pose analysis.
 
-![Streamlit App UI]()
+![Streamlit App UI](https://github.com/Seikh05/FEMEVISION-V1/blob/main/assets/app_UI.png)
 
 ## Core Technologies
 
