@@ -1,12 +1,15 @@
-# FILE: app/processing.py
-# This file is now a class specifically for streamlit-webrtc.
 # type: ignore
+# FILE: app/processing.py
+# This file now contains the corrected lock and the full hand speed logic.
+
 import cv2
 import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 import mediapipe as mp
-from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
+import threading  # Correct import for the Lock
+from streamlit_webrtc import VideoTransformerBase
+import av
 
 from utils import config, logger
 
@@ -16,19 +19,19 @@ class ViolenceVideoTransformer(VideoTransformerBase):
         # Load models and settings here so they are not reloaded on every frame.
         self.model = YOLO("yolov8n.pt")
         self.pose = mp.solutions.pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+        self.mp_pose = mp.solutions.pose # Alias for easy access to landmarks
         self.box_annotator = sv.BoxCornerAnnotator(thickness=1, corner_length=10)
         self.label_annotator = sv.LabelAnnotator()
         self.frame_count = 0
         self.old_gray = None
         self.p0 = None
         # This lock is important for thread safety when updating p0
-        self.lock = mp.Lock()
+        self.lock = threading.Lock() # Correctly use threading.Lock
 
     def process_single_frame(self, frame):
         """Processes one frame of video."""
         self.frame_count += 1
         if self.frame_count % config.FRAME_SKIP_RATE != 0:
-            # If we skip, we still need to return a valid frame layout
             return frame, np.zeros_like(frame), np.zeros_like(frame)
 
         # Create copies for different processing steps
@@ -40,11 +43,9 @@ class ViolenceVideoTransformer(VideoTransformerBase):
         people_boxes = []
         for r in results:
             detections = sv.Detections.from_ultralytics(r)
-            # Filter for 'person' class only (class_id=0)
             detections = detections[detections.class_id == 0]
             people_boxes.extend(detections.xyxy.tolist())
             
-            # Annotate the person detection frame
             labels = [f"{self.model.names[class_id]} {confidence:.2f}" for class_id, confidence in zip(detections.class_id, detections.confidence)]
             person_detection_frame = self.box_annotator.annotate(scene=person_detection_frame, detections=detections)
             person_detection_frame = self.label_annotator.annotate(scene=person_detection_frame, detections=detections, labels=labels)
@@ -56,16 +57,12 @@ class ViolenceVideoTransformer(VideoTransformerBase):
         
         with self.lock:
             if self.old_gray is not None and self.p0 is not None and len(self.p0) > 0:
-                # Calculate optical flow
                 p1, st, err = cv2.calcOpticalFlowPyrLK(self.old_gray, gray_frame, self.p0, None, **config.LK_PARAMS)
-                
-                if p1 is not None:
+                if p1 is not None and st is not None:
                     good_new = p1[st == 1]
-                    for new in good_new:
-                        motion_vector = new - self.p0[st == 1][np.where((p1 == new).all(axis=1))[0][0]]
-                        motion_energy += np.linalg.norm(motion_vector)
-
-                    # Update points for next frame
+                    good_old = self.p0[st == 1]
+                    for new, old in zip(good_new, good_old):
+                        motion_energy += np.linalg.norm(new - old)
                     self.p0 = good_new.reshape(-1, 1, 2)
 
             # --- Hand Speed Check (Pose Estimation) ---
@@ -75,14 +72,24 @@ class ViolenceVideoTransformer(VideoTransformerBase):
                     person_roi = frame[y1:y2, x1:x2]
                     if person_roi.size == 0: continue
                     
+                    h_roi, w_roi, _ = person_roi.shape
                     person_rgb = cv2.cvtColor(person_roi, cv2.COLOR_BGR2RGB)
                     pose_results = self.pose.process(person_rgb)
                     
                     if pose_results.pose_landmarks:
                         landmarks = pose_results.pose_landmarks.landmark
-                        # Get landmarks for hands and elbows
-                        # ... (your hand speed logic) ...
-                        hand_speed = 0 # Placeholder for your calculation
+                        # Restore full hand speed logic
+                        left_wrist = landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST]
+                        right_wrist = landmarks[self.mp_pose.PoseLandmark.RIGHT_WRIST]
+                        left_elbow = landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW]
+                        right_elbow = landmarks[self.mp_pose.PoseLandmark.RIGHT_ELBOW]
+
+                        lw_pos = np.array([left_wrist.x * w_roi, left_wrist.y * h_roi])
+                        rw_pos = np.array([right_wrist.x * w_roi, right_wrist.y * h_roi])
+                        le_pos = np.array([left_elbow.x * w_roi, left_elbow.y * h_roi])
+                        re_pos = np.array([right_elbow.x * w_roi, right_elbow.y * h_roi])
+                        
+                        hand_speed = np.linalg.norm(lw_pos - le_pos) + np.linalg.norm(rw_pos - re_pos)
                         
                         if motion_energy > config.MOTION_ENERGY_THRESHOLD and hand_speed > config.HAND_SPEED_THRESHOLD:
                             violence_detected = True
@@ -104,12 +111,10 @@ class ViolenceVideoTransformer(VideoTransformerBase):
         return frame, person_detection_frame, violence_detection_frame
 
     def recv(self, frame):
-        """This method is called for each frame from the browser."""
+        """This method is called for each frame from the browser for webrtc."""
         frm = frame.to_ndarray(format="bgr24")
-        
         original, person, violence = self.process_single_frame(frm)
-
-        # Combine the three windows into one single frame to send back
+        
         h, w, _ = original.shape
         combined_frame = np.zeros((h, w * 3, 3), dtype=np.uint8)
         combined_frame[:, :w] = original
