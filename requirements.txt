@@ -4,3 +4,4 @@ streamlit
 supervision
 ultralytics
 mediapipe
+streamlit-webrtc
