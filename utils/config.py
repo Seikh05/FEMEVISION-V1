@@ -23,8 +23,8 @@ LK_PARAMS = dict(
 
 # --- Violence Heuristic Thresholds ---
 # These values are crucial and may need tuning based on your video source.
-MOTION_ENERGY_THRESHOLD = 500.0
-HAND_SPEED_THRESHOLD = 40.0
+MOTION_ENERGY_THRESHOLD = 300.0
+HAND_SPEED_THRESHOLD = 60.0
 
 # --- Annotation and Display Settings ---
 BOX_ANNOTATOR = sv.BoxCornerAnnotator(thickness=1)
