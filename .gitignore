@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+violence_log.txt
 
 app/processing_test.py
 app/test_UI.py
